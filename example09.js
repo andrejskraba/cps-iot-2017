@@ -14,7 +14,7 @@ var board = new firmata.Board("/dev/ttyACM0", function(){
 });
 
 function handler(req, res) {
-    fs.readFile(__dirname + "/example08.html",
+    fs.readFile(__dirname + "/example09.html",
     function (err, data) {
         if (err) {
             res.writeHead(500, {"Content-Type": "text/plain"});
@@ -33,6 +33,21 @@ board.on("ready", function() {
     io.sockets.on("connection", function(socket) {
     console.log("Socket id: " + socket.id);
     socket.emit("messageToClient", "Srv connected, board OK");
+    
+        // print of IP adresses, ports, ip family
+    clientIpAddress = socket.request.socket.remoteAddress;
+    io.sockets.emit("messageToClient", "socket.request.socket.remoteAddress: " + socket.request.socket.remoteAddress);
+    // ::ffff:192.168.254.1 is ipv6 address
+    // in Chrome we enter: http://[::ffff:192.168.254.131]:8080 -> http://[::ffff:c0a8:fe83]:8080
+    io.sockets.emit("messageToClient", "socket.request.connection._peername.family: " + socket.request.connection._peername.family);
+    io.sockets.emit("messageToClient", "socket.request.connection._peername.port: " + socket.request.connection._peername.port);
+    io.sockets.emit("messageToClient", "socket.id: " + socket.id);
+    // extract ipv4 address ->
+    var idx = clientIpAddress.lastIndexOf(':');
+    var address4;
+    if (~idx && ~clientIpAddress.indexOf('.')) address4 = clientIpAddress.slice(idx + 1);
+    io.sockets.emit("messageToClient", "ipv4 address: " + socket.request.socket.remoteAddress);
+    io.sockets.emit("messageToClient", "Client data ----------------------------->");
     
     sendValueViaSocket = function(value) {
         io.sockets.emit("messageToClient", value);
